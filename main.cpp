@@ -28,6 +28,12 @@
 using namespace std;
 namespace qi = boost::spirit::qi;
 
+struct print_functor {
+	void operator()(int const &i) const {
+		cout << i << endl;
+	}
+};
+
 /*
  * 
  */
@@ -38,7 +44,8 @@ int main(int argc, char** argv) {
 	
 	bool success = qi::phrase_parse(input.begin(),
 		input.end(),
-		qi::int_ >> '+' >> qi::int_,
+		qi::int_ [ print_functor() ]
+		>> '+' >> qi::int_,
 		qi::space);
 	
 	if (success) {
