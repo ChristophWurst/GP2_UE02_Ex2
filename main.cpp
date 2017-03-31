@@ -36,6 +36,23 @@ struct print_functor {
 	}
 };
 
+/**
+ * expr = term *( '+' term | '-' term )
+ * term = fact *( '*' fact | '/' fact )
+ * fact = double | '(' expr ')'
+ */
+template<typename Iterator>
+struct simple_calc_grammar : qi::grammar<Iterator, qi::space_type> {
+
+	simple_calc_grammar() : simple_calc_grammar::base_type(expr) {
+		expr = term >> *('+' >> term | '-' >> term);
+		term = fact >> *('*' >> fact | '/' >> fact);
+		fact = qi::double_ | '(' >> expr >> ')';
+	}
+
+	qi::rule<Iterator, qi::space_type> expr, term, fact;
+};
+
 /*
  * 
  */
@@ -44,13 +61,13 @@ int main(int argc, char** argv) {
 	int output;
 
 	getline(cin, input);
+	auto begin = input.begin();
 
-	bool success = qi::phrase_parse(input.begin(),
+	simple_calc_grammar<decltype(begin) > grammar;
+	bool success = qi::phrase_parse(input.begin()
 		input.end(),
-		qi::int_ [ qi::_val = qi::_1 ]
-		>> +('+' >> qi::int_ [ qi::_val += qi::_1 ]),
-		qi::space,
-		output);
+		grammar,
+		qi::space);
 
 	if (success) {
 		cout << "Matched. Result=" << output << endl;
