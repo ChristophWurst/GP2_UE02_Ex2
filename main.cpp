@@ -23,13 +23,29 @@
  */
 
 #include <cstdlib>
+#include <boost/spirit/include/qi.hpp>
 
 using namespace std;
+namespace qi = boost::spirit::qi;
 
 /*
  * 
  */
 int main(int argc, char** argv) {
+	string input;
+
+	getline(cin, input);
+	
+	bool success = qi::phrase_parse(input.begin(),
+		input.end(),
+		qi::int_ >> '+' >> qi::int_,
+		qi::space);
+	
+	if (success) {
+		cout << "Matched" << endl;
+	} else {
+		cout << "Error!" << endl;
+	}
 
 	return 0;
 }

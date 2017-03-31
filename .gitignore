@@ -29,3 +29,5 @@ nbproject
 *.exe
 *.out
 *.app
+/build/
+/dist/
