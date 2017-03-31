@@ -24,11 +24,13 @@
 
 #include <cstdlib>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/phoenix.hpp>
 
 using namespace std;
 namespace qi = boost::spirit::qi;
 
 struct print_functor {
+
 	void operator()(int const &i) const {
 		cout << i << endl;
 	}
@@ -39,17 +41,19 @@ struct print_functor {
  */
 int main(int argc, char** argv) {
 	string input;
+	int output;
 
 	getline(cin, input);
-	
+
 	bool success = qi::phrase_parse(input.begin(),
 		input.end(),
-		qi::int_ [ print_functor() ]
-		>> '+' >> qi::int_,
-		qi::space);
-	
+		qi::int_ [ qi::_val = qi::_1 ]
+		>> +('+' >> qi::int_ [ qi::_val += qi::_1 ]),
+		qi::space,
+		output);
+
 	if (success) {
-		cout << "Matched" << endl;
+		cout << "Matched. Result=" << output << endl;
 	} else {
 		cout << "Error!" << endl;
 	}
