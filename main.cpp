@@ -53,6 +53,33 @@ struct simple_calc_grammar : qi::grammar<Iterator, qi::space_type> {
 	qi::rule<Iterator, qi::space_type> expr, term, fact;
 };
 
+/**
+ * expr = term *( '+' term | '-' term )
+ * term = fact *( '*' fact | '/' fact )
+ * fact = double | '(' expr ')'
+ */
+template<typename Iterator>
+struct advanced_calc_grammar : qi::grammar<Iterator, double(), qi::space_type> {
+
+	advanced_calc_grammar() : advanced_calc_grammar::base_type(expr) {
+		expr = term [ qi::_val = qi::_1 ]
+			>>
+			*('+' >> term [ qi::_val += qi::_1 ]
+			| '-' >> term [ qi::_val += qi::_1 ]
+			);
+		term = fact [qi::_val = qi::_1]
+			>>
+			*('*' >> fact [ qi::_val *= qi::_1 ]
+			| '/' >> fact [ qi::_val /= qi::_1 ]
+			);
+		fact = qi::double_ [ qi::_val = qi::_1 ]
+			| '(' >> expr [ qi::_val = qi::_1 ]
+			>> ')';
+	}
+
+	qi::rule<Iterator, double(), qi::space_type> expr, term, fact;
+};
+
 /*
  * 
  */
@@ -62,12 +89,14 @@ int main(int argc, char** argv) {
 
 	getline(cin, input);
 	auto begin = input.begin();
+	auto end = input.end();
 
-	simple_calc_grammar<decltype(begin) > grammar;
-	bool success = qi::phrase_parse(input.begin()
-		input.end(),
+	advanced_calc_grammar<decltype(begin) > grammar;
+	bool success = qi::phrase_parse(begin,
+		end,
 		grammar,
-		qi::space);
+		qi::space,
+		output);
 
 	if (success) {
 		cout << "Matched. Result=" << output << endl;
